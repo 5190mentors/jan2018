@@ -1,25 +1,13 @@
 package org.usfirst.frc.team5190.robot;
 
-import org.usfirst.frc.team5190.robot.commands.TeeterTotterStart;
-import org.usfirst.frc.team5190.robot.subsystems.Claw;
+import org.usfirst.frc.team5190.robot.commands.Navigate;
 import org.usfirst.frc.team5190.robot.subsystems.DriveTrain;
-import org.usfirst.frc.team5190.robot.subsystems.Elevator;
-import org.usfirst.frc.team5190.robot.subsystems.TeeterTotter;
+import org.usfirst.frc.team5190.robot.subsystems.Navigator;
 
-import com.ctre.CANTalon;
-import com.ctre.CANTalon.TalonControlMode;
-import com.kauailabs.navx.frc.AHRS;
-
-import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.Jaguar;
-import edu.wpi.first.wpilibj.RobotDrive;
-import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
-import edu.wpi.first.wpilibj.livewindow.LiveWindow;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -30,13 +18,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class Robot extends IterativeRobot {
 	Command autonomousCommand;
-
-	public static DriveTrain drivetrain;
-	public static TeeterTotter teeterTotter;	
-	public static Elevator elevator;
-	public static Claw claw;
-	public static OI oi;
-
+	
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -44,55 +26,34 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void robotInit() {
 		
-		// Initialize all actuators and sensors
-		RobotMap.frontLeftMotor = new Jaguar(RobotMap.spFrontLeft);
-		RobotMap.rearLeftMotor = new Jaguar(RobotMap.spRearLeft);
-		RobotMap.frontRightMotor = new Jaguar(RobotMap.spFrontRight);
-		RobotMap.rearRightMotor = new Jaguar(RobotMap.spRearRight); 
-		
-		RobotMap.drive = new RobotDrive(RobotMap.frontLeftMotor, RobotMap.rearLeftMotor, RobotMap.frontRightMotor, RobotMap.rearRightMotor);
-
-		if (RobotMap.enableEncoders) {
-			RobotMap.leftEncoder = new Encoder(RobotMap.dtLeftEncPortA, RobotMap.dtLeftEncPortB);
-			RobotMap.rightEncoder = new Encoder(RobotMap.dtRightEncPortA, RobotMap.dtRightEncPortA);
-			RobotMap.leftEncoder.setDistancePerPulse(0.01745 * RobotMap.kRadiusInInches);
-			RobotMap.rightEncoder.setDistancePerPulse(0.01745 * RobotMap.kRadiusInInches);
-		}
-
-		if (RobotMap.enableNavX)
-			RobotMap.navx = new AHRS(SPI.Port.kMXP, RobotMap.kNavUpdateHz);
-
-		if (RobotMap.enableClaw)
-			RobotMap.grip = new Solenoid(RobotMap.dvPcm, RobotMap.spGrip);
-		
-		if (RobotMap.enableElevator) {
-//			RobotMap.elevatorMotor = new Victor(RobotMap.spElevatorMotor);
-			RobotMap.elevatorMotor = new CANTalon(RobotMap.spElevatorMotor);
-			((CANTalon) RobotMap.elevatorMotor).changeControlMode(TalonControlMode.PercentVbus);
-			((CANTalon) RobotMap.elevatorMotor).enableBrakeMode(true);
-		}
-
 		// Initialize all subsystems
-		drivetrain = new DriveTrain();
-		teeterTotter = new TeeterTotter();
-		elevator = new Elevator();		
-		claw = new Claw();
-		oi = new OI();
+		RobotMap.drivetrain = new DriveTrain();
+		RobotMap.navigator = new Navigator();
+
+		if (RobotMap.dtDriveWithXbox)
+			RobotMap.xboxoi = new XBoxOI();
+		else
+			RobotMap.joystickoi = new JoystickOI();
 		
 		// instantiate the command used for the autonomous period
-		autonomousCommand = new TeeterTotterStart();
+		autonomousCommand = new Navigate();
 
 		// Show what command your subsystem is running on the SmartDashboard
-		SmartDashboard.putData(drivetrain);
-		SmartDashboard.putData(teeterTotter);
-		SmartDashboard.putData(elevator);
-		SmartDashboard.putData(claw);		
+//		SmartDashboard.putData(drivetrain);
+//		SmartDashboard.putDate(navigator);
 	}
 
 	@Override
 	public void autonomousInit() {
-		// there is no timing in this now
-		autonomousCommand.start(); // schedule the autonomous command (example)
+		String gameData = DriverStation.getInstance().getGameSpecificMessage();
+		if (gameData.charAt(0) == 'L')
+		{
+			//Put left auto code here
+			autonomousCommand.start();
+		} else {
+			//Put right auto code here
+			autonomousCommand.start();
+		}		
 	}
 
 	/**
@@ -125,14 +86,11 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void testPeriodic() {
-		LiveWindow.run();
 	}
 	
 	@Override
 	public void disabledInit() {
-		teeterTotter.reset();
-		elevator.reset();
-		claw.reset();		
-		drivetrain.reset();
+		RobotMap.drivetrain.reset();
+		RobotMap.navigator.reset();
 	}
 }

@@ -4,26 +4,22 @@
  */
 package org.usfirst.frc.team5190.robot.commands;
 
-import edu.wpi.first.wpilibj.command.TimedCommand;
+import org.usfirst.frc.team5190.robot.RobotMap;
 
-import org.usfirst.frc.team5190.robot.Robot;
+import edu.wpi.first.wpilibj.command.TimedCommand;
 
 public class SubsystemsReset extends TimedCommand {
 	public SubsystemsReset() {
 		super("ResetSubsystems", 1);
-		requires(Robot.drivetrain);
-		requires(Robot.teeterTotter);
-		requires(Robot.claw);
-		requires(Robot.elevator);
+		requires(RobotMap.drivetrain);
+		requires(RobotMap.navigator);
 	}
 
 	@Override
 	protected void initialize() {
 		System.out.println("Entering command - ResetSubsystems");		
-		Robot.teeterTotter.reset();
-		Robot.elevator.reset();
-		Robot.claw.reset();
-		Robot.drivetrain.reset();
+		RobotMap.drivetrain.reset();
+		RobotMap.navigator.reset();
 	}
 
 	@Override
