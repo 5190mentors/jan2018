@@ -47,29 +47,29 @@ public class DriveTrain extends Subsystem {
 		rearRightMotor.setNeutralMode(NeutralMode.Coast);
 
         frontLeftMotor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
+        frontLeftMotor.setSensorPhase(RobotMap.dtReverseSensors);
         frontRightMotor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
-
+        frontRightMotor.setSensorPhase(RobotMap.dtReverseSensors);
+        
         // control mode
 		if (RobotMap.dtVelocityMode) {
-//			frontLeftMotor.set(ControlMode.Velocity, 0);
 	        frontLeftMotor.config_kP(0, 0.6, 0);
 	        frontLeftMotor.config_kF(0, Utils.calculateFGain(1, RobotMap.dtMaxRobotSpeedAtHighGear, RobotMap.dtDriveWheelRadius, RobotMap.dtTicksPerRotation), 0);
 	        
-//			frontRightMotor.set(ControlMode.Velocity, 0);
 	        frontRightMotor.config_kP(0, 0.6, 0);
 	        frontRightMotor.config_kF(0, Utils.calculateFGain(1, RobotMap.dtMaxRobotSpeedAtHighGear, RobotMap.dtDriveWheelRadius, RobotMap.dtTicksPerRotation), 0);
 
 			// Ramping for masters, no ramping for followers
-			frontLeftMotor.configClosedloopRamp(2, 0);
-			frontRightMotor.configClosedloopRamp(2, 0);
-			rearLeftMotor.configClosedloopRamp(0, 0);
-			rearRightMotor.configClosedloopRamp(0, 0);
+//			frontLeftMotor.configClosedloopRamp(2, 0);
+//			frontRightMotor.configClosedloopRamp(2, 0);
+//			rearLeftMotor.configClosedloopRamp(0, 0);
+//			rearRightMotor.configClosedloopRamp(0, 0);
 		}
 		else {
-			frontLeftMotor.configOpenloopRamp(2, 0);
-			frontRightMotor.configOpenloopRamp(2, 0);
-			rearLeftMotor.configOpenloopRamp(0, 0);
-			rearRightMotor.configOpenloopRamp(0, 0);			
+//			frontLeftMotor.configOpenloopRamp(2, 0);
+//			frontRightMotor.configOpenloopRamp(2, 0);
+//			rearLeftMotor.configOpenloopRamp(0, 0);
+//			rearRightMotor.configOpenloopRamp(0, 0);			
 		}
 		
 //		LiveWindow.addActuator("Drive Train", "Front Left Motor", (Jaguar) RobotMap.frontLeftMotor);
@@ -81,6 +81,8 @@ public class DriveTrain extends Subsystem {
 
 		if (RobotMap.dtEnableNavX) {
 			navx = new AHRS(SPI.Port.kMXP, RobotMap.dtNavUpdateHz);
+			navx.reset();
+			navx.setAngleAdjustment(RobotMap.nvInitialHeading);
 //			LiveWindow.addSensor("Drive Train", "NavX", RobotMap.navx);
 		}
 
@@ -98,9 +100,6 @@ public class DriveTrain extends Subsystem {
 	}
 	
 	public void reset() {		
-		if (RobotMap.dtEnableNavX)
-			navx.reset();
-		
 		// stop the motors
 		frontLeftMotor.stopMotor();
 		frontRightMotor.stopMotor();
@@ -143,25 +142,31 @@ public class DriveTrain extends Subsystem {
 	        }
 	
 	        // convert from -1,1 scale to linear speed f/s scale
-	        leftValue *= RobotMap.dtMaxRobotSpeedAtHighGear;
-	        rightValue *= RobotMap.dtMaxRobotSpeedAtHighGear;
+	        leftValue *= RobotMap.nvMaxVelocity;
+	        rightValue *= RobotMap.nvMaxVelocity;
 	
 	        // convert into rpm before setting the motors
 			frontLeftMotor.set(ControlMode.Velocity, Utils.feetPerSecondToRPM(leftValue, RobotMap.dtDriveWheelRadius));
 			frontRightMotor.set(ControlMode.Velocity, Utils.feetPerSecondToRPM(rightValue, RobotMap.dtDriveWheelRadius));
 		}
 		else {
+			// control the speed for now
+			if (leftValue > 0.2) leftValue = 0.2;
+			if (leftValue < -0.2) leftValue = -0.2;
+			if (rightValue > 0.2) rightValue = 0.2;
+			if (rightValue < -0.2) rightValue = -0.2;
+			
 			frontLeftMotor.set(ControlMode.PercentOutput, leftValue);
 			frontRightMotor.set(ControlMode.PercentOutput, rightValue);			
 		}
 	}
 	
 	public int getLeftTicks() {
-		return frontLeftMotor.getSelectedSensorPosition(0);
+		return frontLeftMotor.getSensorCollection().getQuadraturePosition();
 	}
 	
 	public int getRightTicks() {
-		return frontRightMotor.getSelectedSensorPosition(0);
+		return frontRightMotor.getSensorCollection().getQuadraturePosition();
 	}
 	
 	public double getAngle() {

@@ -14,7 +14,7 @@ public class Navigate extends Command {
 	public Navigate() {
 		super("Navigate");
 		requires(RobotMap.navigator);
-		requires(RobotMap.drivetrain);
+//		requires(RobotMap.drivetrain);
 	}
 
 	@Override

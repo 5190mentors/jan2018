@@ -12,5 +12,6 @@
 	<classpathentry kind="var" path="USERLIBS_DIR/CTRE_Phoenix-sources.jar"/>
 	<classpathentry kind="var" path="USERLIBS_DIR/CTRE_Phoenix.jar" sourcepath="/CTRE_Phoenix.sources"/>
 	<classpathentry kind="lib" path="C:/Users/vijayma/wpilib/user/java/lib/Pathfinder-Java.jar"/>
+	<classpathentry kind="var" path="USERLIBS_DIR/Pathfinder-Java.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
